@@ -7,9 +7,10 @@ a {
 	text-decoration: none;
 }
 
-/*ul {
-	list-style: none;
-}*/
+ul {
+	/*list-style: none;*/
+	margin-right: 10px;
+}
 
 /*li {
 	list-style: none;
@@ -55,6 +56,10 @@ h1 {
     float: right;
     font-size: 28px;
     font-weight: bold;
+}
+
+.closeList {
+	margin-right: 10px;
 }
 
 .close:hover,

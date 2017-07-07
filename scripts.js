@@ -17,45 +17,23 @@ function Task (input) {
 	};*/
 };
 
+var listaCompleta = [];
+
 function List (id, title, description) {
 	this.id = id;
 	this.title = title;
 	this.description = description;
-	this.addTask = function(list) {
-		
-		//list es el objeto list
-		// lista es el elemento de html con toda la lista impresa
-		var lista = document.getElementById(list.id);
+	this.tareas = [];
+};
 
-		var input = lista.querySelector(".inputTask").value;
 
-		var task = new Task(input);
 
-		var ul = lista.querySelector("ul");
-
-		var li = document.createElement("LI");
-		li.innerText = task.input;
-		ul.appendChild(li);
-		
-		var buttonEdit = document.createElement("button");
-		buttonEdit.innerText = "Edit"
-		li.appendChild(buttonEdit);
-		buttonEdit.classList.add("buttonEdit");
-
-		var buttonDelete = document.createElement("button");
-		buttonDelete.innerText = "Delete"
-		li.appendChild(buttonDelete);
-		buttonDelete.classList.add("buttonDelete");
-
-		input="";
-	};
-	this.eliminateAllTasks = function (list) {
-		var lista = document.getElementById(list.id);
-		var elementosLI = lista.querySelectorAll("li");
-		var ul = lista.querySelector("ul");
-		for (var i = 0; i < elementosLI.length; i++) {
-			ul.removeChild(elemntosLI[i]);
-		};
+List.prototype.eliminateAllTasks = function (list) {
+	var lista = document.getElementById(list.id);
+	var elementosLI = lista.querySelectorAll("li");
+	var ul = lista.querySelector("ul");
+	for (var i = 0; i < elementosLI.length; i++) {
+		ul.removeChild(elementosLI[i]);
 	};
 };
 
@@ -67,11 +45,47 @@ function addList () {
 
 	var list = new List(generarID(), inputTitulo.value, inputDesc.value);
 
-	var div = document.createElement("div");
+	list.imprimirLista(list);
+
+	//input.autofocus = true;
+
+	var modal = document.getElementById('myModal');
+    modal.style.display = "none";
+
+    inputTitulo.value="";
+    inputDesc.value="";
+
+    listaCompleta.push(list);
+
+    /*autoFocus ();*/
+};
+
+List.prototype.addTask = function(list) {
+	//list es el objeto list
+	// contenedor es el elemento de html con toda la lista impresa
+	var contenedor = document.getElementById(list.id);
+
+	var input = contenedor.querySelector(".inputTask").value;
+
+	var task = new Task(input);
+
+	list.imprimirTarea(contenedor, list, task);
+};
+
+List.prototype.imprimirLista = function(list) {
+
 	var container = document.querySelector(".container");
+
+	var div = document.createElement("div");
 	container.appendChild(div);
 	div.setAttribute("id",list.id);
 	div.classList.add("lista");
+
+	var close = document.createElement("span");
+	var closeContent = "&times;";
+	close.innerHTML = closeContent;
+	div.appendChild(close);
+	close.classList.add("close", "closeList");
 
 	var h2 = document.createElement("H2");
 	h2.innerText = list.title;
@@ -91,7 +105,6 @@ function addList () {
 	input.placeholder = "Enter task here...";
 	form.appendChild(input);
 	input.classList.add("inputTask");
-	//input.autofocus = true;
 
 	var botonAdd = document.createElement("button");
 	botonAdd.innerText = "Add";
@@ -108,38 +121,50 @@ function addList () {
 	botonEliminateTasks.addEventListener("click", function() {
 		list.eliminateAllTasks(list);
 	});
-
-	var modal = document.getElementById('myModal');
-    modal.style.display = "none";
-
-    inputTitulo.value="";
-    inputDesc.value="";
-
-    /*autoFocus ();*/
 };
 
-function editList () {
-	//editar el titulo y descripcion
-};
+List.prototype.imprimirTarea = function(contenedor, list, task) {
 
-function showAll () {
+	var ul = contenedor.querySelector("UL");
 
+	var li = document.createElement("LI");
+	li.innerText = task.input;
+	ul.appendChild(li);
+	
+	var buttonEdit = document.createElement("button");
+	buttonEdit.innerText = "Edit"
+	li.appendChild(buttonEdit);
+	buttonEdit.classList.add("buttonEdit");
+
+	var buttonDelete = document.createElement("button");
+	buttonDelete.innerText = "Delete"
+	li.appendChild(buttonDelete);
+	buttonDelete.classList.add("buttonDelete");
+
+	var placeholder = contenedor.querySelector(".inputTask").placeholder
+	placeholder = "Enter task here...";
+
+	list.tareas.push(task);
 };
 
 function searchList () {
 
 };
 
-function eliminateList () {
+function eliminateAllList () {
 	var container = document.querySelector(".container");
 	container.innerHTML = "";
+
+	listaCompleta = [];
 };
+
+function saveList () {
+	var listaJSON = JSON.stringify(listaCompleta);
+	localStorage.setItem("listaCompleta", listaJSON);
+	return listaJSON;
+}
 
 function orderList () {
-
-};
-
-function addTask () {
 
 };
 
@@ -184,7 +209,25 @@ function init() {
 
 	//boton eliminar todas las listas
 	var eliminateButton = document.querySelector(".eliminateButton");
-	eliminateButton.onclick = eliminateList;
+	eliminateButton.onclick = eliminateAllList;
+
+	var saveButton = document.querySelector(".saveButton");
+	saveButton.onclick = saveList;
+
+	window.onload = function() {
+		var listas = JSON.parse(localStorage.getItem("listaCompleta"));
+
+		for (var i = 0; i < listas.length; i++) {
+			listaCompleta.push(listas[i]);
+			var list = new List (listas[i].id, listas[i].title, listas[i].description);
+			var tasks = listas[i].tareas;
+			list.imprimirLista(list);
+			var contenedor = document.getElementById(list.id);
+			for (var i = 0; i < tasks.length; i++) {
+				list.imprimirTarea(contenedor, list, tasks[i]);
+			};
+		};
+	};
 };
 
 init();
